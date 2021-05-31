@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import Color from '../constants/Color';
 
 const Container = styled.div`
   height: 48px;
@@ -7,18 +8,31 @@ const Container = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
+  font-size: 14px;
+  background-color: ${p => p.hovered && Color.GRAY_LIGHT};
+`;
+
+const Left = styled.div`
+  margin-right: 8px;
 `;
 
 const DropdownItem = (props) => {
-  const { value, name, render, leftContent, onClick } = props;
-
-  console.log(value, name, render, leftContent, onClick);
+  const { value, render, leftContent, onClick, hovered, onMouseEnter, onMouseLeave } = props;
 
   return (
-    <Container onClick={() => onClick?.(value)}>
+    <Container
+      tabIndex="0"
+      onClick={onClick}
+      hovered={hovered}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       {render ? render?.()
         : (
-          <div>{name}</div>
+          <>
+            {leftContent && (<Left>{leftContent}</Left>)}
+            {value}
+          </>
         )}
     </Container>
   );
@@ -26,17 +40,20 @@ const DropdownItem = (props) => {
 
 DropdownItem.propTypes = {
   value: PropTypes.string.isRequired,
-  name: PropTypes.string,
   render: PropTypes.func,
+  hovered: PropTypes.bool,
   leftContent: PropTypes.element,
   onClick: PropTypes.func,
+  onMouseEnter: PropTypes.func,
+  onMouseLeave: PropTypes.func,
 };
 
 DropdownItem.defaultProps = {
-  name: undefined,
   render: undefined,
   leftContent: undefined,
   onClick: undefined,
+  onMouseEnter: undefined,
+  onMouseLeave: undefined,
+  hovered: false,
 };
-
 export default DropdownItem;
