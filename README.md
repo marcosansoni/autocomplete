@@ -16,7 +16,7 @@ By default, application will be opened on a new tab of the browser accessible wi
 ## Storybook
 
 A preview of the component with different usages is available through storybook.
-A remote version is accessible through .
+A remote version is accessible [here](https://autocomplete-storybook.netlify.app/).
 
 It is also possible to run storybook locally with 
 
