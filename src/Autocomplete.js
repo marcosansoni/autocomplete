@@ -41,81 +41,16 @@ const Clear = styled.div`
   align-items: center;
 `;
 
-const optionsA = [
-  {
-    value: 'c'
-  },
-  {
-    value: 'i'
-  },
-  {
-    value: 'a'
-  },
-];
-
 const Autocomplete = (props) => {
-  const { options, style, className, onChange } = props;
+  const { options: optionsProps, style, className, onChange } = props;
 
   const [value, setValue] = useState('');
   const [preview, setPreview] = useState('');
   const [hoveredIndex, setHoveredIndex] = useState(-1);
   const [openedDropdown, setIsOpenedDropdown] = useState(false);
+  const [options, setOptions] = useState([]);
 
   const inputRef = useRef();
-
-  useEffect(() => {
-    // eslint-disable-next-line consistent-return
-    const handleKeyPressItem = (e) => {
-      // e.preventDefault();
-      if (e.key === 'ArrowDown') {
-        return setHoveredIndex(index => {
-          const updatedIndex = (index + 1) % (options.length + 1);
-          // console.log('Down');
-          // console.log(updatedIndex);
-          // console.log(options?.[updatedIndex]?.value);
-          // console.log(value);
-          if (updatedIndex === -1) {
-            // setPreview(value);
-            inputRef.current?.focus();
-          } else {
-            // setPreview(options?.[updatedIndex]?.value);
-            inputRef.current?.blur();
-          }
-          return updatedIndex;
-        });
-      }
-      if (e.key === 'ArrowUp') {
-        return setHoveredIndex(index => {
-          const updatedIndex = ((index - 1) + (options.length + 1)) % (options.length + 1);
-          // console.log('Up');
-          // console.log(updatedIndex);
-          // console.log(options?.[updatedIndex]?.value);
-          // console.log(value);
-          if (updatedIndex === options.length) {
-            // setPreview(value);
-            inputRef.current?.focus();
-          } else {
-            // setPreview(options?.[updatedIndex]?.value);
-            inputRef.current?.blur();
-          }
-          return updatedIndex;
-        });
-      }
-      if (e.key === 'Enter' && hoveredIndex !== -1) {
-        const updatedValue = options?.[hoveredIndex]?.value;
-        setPreview(updatedValue);
-        setValue(updatedValue);
-        inputRef?.current?.focus();
-        setIsOpenedDropdown(false);
-        return setHoveredIndex(-1);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPressItem);
-    return () => {
-      window.removeEventListener('keydown', handleKeyPressItem);
-    };
-  }, []);
 
   useEffect(() => {
     if (hoveredIndex === -1 || hoveredIndex === options.length) {
@@ -131,54 +66,52 @@ const Autocomplete = (props) => {
     }
   }, [openedDropdown]);
 
-  const handleChange = (e) => {
-    const updatedValue = e.target.value;
-    if (updatedValue.length > 0 && options.length) setIsOpenedDropdown(true);
+  const handleRefineOptions = (updatedValue) => optionsProps.filter(option => option.value?.toLowerCase().startsWith(updatedValue?.toLowerCase()));
+
+  const handleChange = (updatedValue, forceCloseDropdown = false) => {
+    const updatedOptions = handleRefineOptions(updatedValue);
+    setOptions(updatedOptions);
+    if (!forceCloseDropdown) {
+      setIsOpenedDropdown(updatedValue.length > 0 && updatedOptions.length > 0);
+    } else {
+      setIsOpenedDropdown(false);
+    }
     setValue(updatedValue);
     setPreview(updatedValue);
     onChange?.(updatedValue);
   };
 
-  const handleReset = () => {
-    setValue('');
-    setPreview('');
-    setIsOpenedDropdown(false);
-    onChange?.('');
+  const handleKeyPress = (e) => {
+    if (!openedDropdown) return;
+    if (e.key === 'ArrowDown') {
+      const updatedIndex = (hoveredIndex + 1) % (options.length + 1);
+      setHoveredIndex(updatedIndex);
+    } else if (e.key === 'ArrowUp') {
+      const updatedIndex = ((hoveredIndex - 1) + (options.length + 1)) % (options.length + 1);
+      setHoveredIndex(updatedIndex);
+    } else if (e.key === 'Enter') {
+      const selectedValue = options?.[hoveredIndex]?.value;
+      handleChange(selectedValue, true);
+    }
   };
 
-  const handleKeyPressReset = (e) => {
-    if (e.key === 'Enter') handleReset();
-  };
-
-  const handleMouseEnterItem = (updatedValue, index) => {
-    inputRef.current?.blur();
-    setHoveredIndex(index);
-  };
-
-  const handleMouseLeaveItem = () => {
-    setHoveredIndex(-1);
-  };
-
-  const handleClickItem = (updatedValue) => {
-    setPreview(updatedValue);
-    setValue(updatedValue);
-    setIsOpenedDropdown(false);
-  };
-
-  const handleClickOut = () => {
-    setIsOpenedDropdown(false);
-  };
-
+  const handleClickOut = () => setIsOpenedDropdown(false);
   const dropdown = useClickOut(handleClickOut);
 
   return (
     <Container style={style} className={className}>
-      <Input type="text" value={preview} onChange={handleChange} ref={inputRef} />
+      <Input
+        type="text"
+        value={preview}
+        onChange={(e) => handleChange(e.target.value)}
+        ref={inputRef}
+        onKeyDown={handleKeyPress}
+      />
       <Clear>
         <ClearIcon
           size={16}
-          onClick={handleReset}
-          onKeyPress={handleKeyPressReset}
+          onClick={() => handleChange('', true)}
+          onKeyPress={(e) => e.key === 'Enter' && handleChange('', true)}
         />
       </Clear>
       {openedDropdown && (
@@ -190,9 +123,9 @@ const Autocomplete = (props) => {
               value={option.value}
               render={option.render}
               leftContent={option.leftContent}
-              onMouseEnter={() => handleMouseEnterItem(option.value, index)}
-              onMouseLeave={handleMouseLeaveItem}
-              onClick={() => handleClickItem(option.value)}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(-1)}
+              onClick={() => handleChange(option.value, true)}
             />
           ))}
         </Dropdown>
@@ -213,8 +146,7 @@ Autocomplete.propTypes = {
 
 Autocomplete.defaultProps = {
   style: undefined,
-  // options: [],
-  options: optionsA,
+  options: [],
   className: undefined,
   onChange: undefined,
 };

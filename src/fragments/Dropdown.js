@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import { forwardRef } from 'react';
 
 const Container = styled.div`
   position: absolute;
@@ -10,15 +11,15 @@ const Container = styled.div`
   box-shadow: rgb(64 64 64 / 20%) 0 2px 20px;
 `;
 
-const Dropdown = (props) => {
+const Dropdown = forwardRef((props, ref) => {
   const { children } = props;
 
   return (
-    <Container>
+    <Container ref={ref}>
       {children}
     </Container>
   );
-};
+});
 
 Dropdown.propTypes = {
   children: PropTypes.element,
