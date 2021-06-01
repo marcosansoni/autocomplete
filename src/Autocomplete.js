@@ -15,20 +15,19 @@ const Input = styled.input`
   font-size: inherit;
 
   :focus {
-    outline: 1px solid black;
-    background-color: #f1f1f1;
+    outline: ${`1px solid ${Color.BLACK}`};
+    background-color: ${Color.GRAY_LIGHT};
   }
 
   :hover {
-    background-color: #f1f1f1;
+    background-color: ${Color.GRAY_LIGHT};
   }
 `;
 
 const Container = styled.div`
-  width: 250px;
-  height: 32px;
+  height: 36px;
   margin: 4px;
-  font-size: 18px;
+  font-size: 16px;
   position: relative;
 `;
 
@@ -42,7 +41,7 @@ const Clear = styled.div`
 `;
 
 const Autocomplete = (props) => {
-  const { options: optionsProps, style, className, onChange } = props;
+  const { options: optionsProps, style, className, onChange, showClear } = props;
 
   const [value, setValue] = useState('');
   const [preview, setPreview] = useState('');
@@ -66,8 +65,11 @@ const Autocomplete = (props) => {
     }
   }, [openedDropdown]);
 
+  // Refine options showed into autocomplete according with input
   const handleRefineOptions = (updatedValue) => optionsProps.filter(option => option.value?.toLowerCase().startsWith(updatedValue?.toLowerCase()));
 
+  // Callback triggered each time a value into text input change
+  // if forceCloseDropdown is true, dropdown is collapsed
   const handleChange = (updatedValue, forceCloseDropdown = false) => {
     const updatedOptions = handleRefineOptions(updatedValue);
     setOptions(updatedOptions);
@@ -81,6 +83,7 @@ const Autocomplete = (props) => {
     onChange?.(updatedValue);
   };
 
+  // Callback used to navigate between items of autocomplete
   const handleKeyPress = (e) => {
     if (!openedDropdown) return;
     if (e.key === 'ArrowDown') {
@@ -107,13 +110,15 @@ const Autocomplete = (props) => {
         ref={inputRef}
         onKeyDown={handleKeyPress}
       />
-      <Clear>
-        <ClearIcon
-          size={16}
-          onClick={() => handleChange('', true)}
-          onKeyPress={(e) => e.key === 'Enter' && handleChange('', true)}
-        />
-      </Clear>
+      {showClear && (
+        <Clear>
+          <ClearIcon
+            size={16}
+            onClick={() => handleChange('', true)}
+            onKeyPress={(e) => e.key === 'Enter' && handleChange('', true)}
+          />
+        </Clear>
+      )}
       {openedDropdown && (
         <Dropdown ref={dropdown}>
           {options.map((option, index) => (
@@ -121,7 +126,6 @@ const Autocomplete = (props) => {
               hovered={hoveredIndex === index}
               key={option.value}
               value={option.value}
-              render={option.render}
               leftContent={option.leftContent}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(-1)}
@@ -135,13 +139,21 @@ const Autocomplete = (props) => {
 };
 
 Autocomplete.propTypes = {
+  /** Custom style object */
   style: PropTypes.object,
+  /** Array of possible suggestions,
+   * value represents text showed,
+   * leftContent if some element has to be rendered on left */
   options: PropTypes.arrayOf(PropTypes.shape({
     value: PropTypes.string,
-    name: PropTypes.string,
+    leftContent: PropTypes.element,
   })),
+  /** Custom className */
   className: PropTypes.string,
+  /** Callback triggered each time value of text input has been changed */
   onChange: PropTypes.func,
+  /** If true, clear icon is shown into text input */
+  showClear: PropTypes.bool,
 };
 
 Autocomplete.defaultProps = {
@@ -149,6 +161,7 @@ Autocomplete.defaultProps = {
   options: [],
   className: undefined,
   onChange: undefined,
+  showClear: false,
 };
 
 export default Autocomplete;

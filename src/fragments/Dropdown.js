@@ -9,6 +9,8 @@ const Container = styled.div`
   right: 0;
   border-radius: 4px;
   box-shadow: rgb(64 64 64 / 20%) 0 2px 20px;
+  max-height: 196px;
+  overflow: auto;
 `;
 
 const Dropdown = forwardRef((props, ref) => {
@@ -22,7 +24,8 @@ const Dropdown = forwardRef((props, ref) => {
 });
 
 Dropdown.propTypes = {
-  children: PropTypes.element,
+  /** Content of autocomplete */
+  children: PropTypes.any,
 };
 
 Dropdown.defaultProps = {

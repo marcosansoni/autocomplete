@@ -10,6 +10,7 @@ const Container = styled.div`
   align-items: center;
   font-size: 14px;
   background-color: ${p => p.hovered && Color.GRAY_LIGHT};
+  cursor: pointer;
 `;
 
 const Left = styled.div`
@@ -17,7 +18,7 @@ const Left = styled.div`
 `;
 
 const DropdownItem = (props) => {
-  const { value, render, leftContent, onClick, hovered, onMouseEnter, onMouseLeave } = props;
+  const { value, leftContent, onClick, hovered, onMouseEnter, onMouseLeave } = props;
 
   return (
     <Container
@@ -27,33 +28,33 @@ const DropdownItem = (props) => {
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      {render ? render?.()
-        : (
-          <>
-            {leftContent && (<Left>{leftContent}</Left>)}
-            {value}
-          </>
-        )}
+      {leftContent && (<Left>{leftContent}</Left>)}
+      {value}
     </Container>
   );
 };
 
 DropdownItem.propTypes = {
+  /** text showed into items */
   value: PropTypes.string.isRequired,
-  render: PropTypes.func,
+  /** If true item is highlighted */
   hovered: PropTypes.bool,
+  /** Custom content on the left of the items */
   leftContent: PropTypes.element,
+  /** Callback triggered on click of the item */
   onClick: PropTypes.func,
+  /** Callback used when mouse hover */
   onMouseEnter: PropTypes.func,
+  /** Callback used when mouse leave */
   onMouseLeave: PropTypes.func,
 };
 
 DropdownItem.defaultProps = {
-  render: undefined,
   leftContent: undefined,
   onClick: undefined,
   onMouseEnter: undefined,
   onMouseLeave: undefined,
   hovered: false,
 };
+
 export default DropdownItem;
